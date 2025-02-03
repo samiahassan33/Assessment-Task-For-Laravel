@@ -7,6 +7,9 @@ use App\Models\Affiliate;
 use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Queue;
 
 class MerchantService
 {
@@ -18,9 +21,17 @@ class MerchantService
      * @param array{domain: string, name: string, email: string, api_key: string} $data
      * @return Merchant
      */
+
     public function register(array $data): Merchant
     {
         // TODO: Complete this method
+       // dump('Registering merchant with data:', $data);
+
+        return Merchant::create([
+            'user_id'=> Arr::get($data, 'user_id', auth()->id()),
+            'domain' => $data['domain'],
+            'display_name' => $data['display_name'],
+        ]);
     }
 
     /**
@@ -32,6 +43,14 @@ class MerchantService
     public function updateMerchant(User $user, array $data)
     {
         // TODO: Complete this method
+        $merchant = $user->merchant;
+    
+    if ($merchant) {
+        $merchant->update([
+            'domain' => $data['domain'],
+            'display_name' => $data['display_name'],
+        ]);
+    }
     }
 
     /**
@@ -44,6 +63,9 @@ class MerchantService
     public function findMerchantByEmail(string $email): ?Merchant
     {
         // TODO: Complete this method
+        return Merchant::whereHas('user', function ($query) use ($email) {
+            $query->where('email', $email);
+        })->first();
     }
 
     /**
@@ -56,5 +78,12 @@ class MerchantService
     public function payout(Affiliate $affiliate)
     {
         // TODO: Complete this method
+        $orders = Order::where('affiliate_id', $affiliate->id)
+        ->where('payout_status', Order::STATUS_UNPAID)
+        ->get();
+
+    foreach ($orders as $order) {
+        Queue::push(new PayoutOrderJob($order)); 
+    }
     }
 }

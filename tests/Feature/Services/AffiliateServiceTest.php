@@ -33,16 +33,17 @@ class AffiliateServiceTest extends TestCase
     {
         return $this->app->make(AffiliateService::class);
     }
-
+     
     public function test_register_affiliate()
     {
         $this->mock(ApiService::class)
-            ->shouldReceive('createDiscountCode')
-            ->once()
-            ->andReturn([
-                'id' => -1,
-                'code' => $discountCode = $this->faker->uuid()
-            ]);
+        ->shouldReceive('createDiscountCode')
+        ->with($this->merchant)
+        ->once()
+        ->andReturn([
+            'id' => -1,
+            'code' => $discountCode = $this->faker->uuid()
+        ]);
 
         Mail::fake();
 

@@ -24,9 +24,11 @@ class MerchantServiceTest extends TestCase
 
     protected function getDummyData(): array
     {
+        $user = User::factory()->create(); 
         return [
+            'user_id' => $user->id,
             'domain' => $this->faker->domainName(),
-            'name' => $this->faker->name(),
+            'display_name' => $this->faker->name(),
             'email' => $this->faker->email(),
             'api_key' => $this->faker->password()
         ];
@@ -40,7 +42,7 @@ class MerchantServiceTest extends TestCase
 
         $this->assertDatabaseHas('merchants', [
             'domain' => $data['domain'],
-            'display_name' => $data['name']
+            'display_name' => $data['display_name']
         ]);
 
         $this->assertDatabaseHas('users', [
@@ -64,7 +66,7 @@ class MerchantServiceTest extends TestCase
         $this->assertDatabaseHas('merchants', [
             'id' => $merchant->id,
             'domain' => $data['domain'],
-            'display_name' => $data['name']
+            'display_name' => $data['display_name']
         ]);
     }
 
